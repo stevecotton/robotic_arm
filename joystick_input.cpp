@@ -17,6 +17,7 @@
 #include <SDL/SDL.h>
 
 #include "robotic_device.h"
+#include "input_config.h"
 
 namespace {
     /** How far the joystick has to be pushed to be registered as being moved */
@@ -72,20 +73,22 @@ int main(int argc, char** argv) {
                     std::cout << "Event " << (int)event.type << std::endl;
                     std::array<ArmDevice::Motion, ArmDevice::NUMBER_OF_AXIS> movement = {ArmDevice::Motion::STOP};
 
-                    for (int i=0; i < numAxis ; i++) {
+                    for (int outAxis=0; outAxis < numAxis ; outAxis++) {
+                        const int inAxis = InputMapping::getInputForOutput(outAxis);
+
                         // SDL joystick coordinates are positive down-right.  The arm seems to associate down-left with negative, so reverse one axis.
                         // The SDL value is a signed 16-bit, promoted in this code to handle 16-bit MIN_VALUE.
-                        int32_t value = SDL_JoystickGetAxis(inputStick, i);
-                        if (0 == i % 2) {
+                        int32_t value = SDL_JoystickGetAxis(inputStick, inAxis);
+                        if (0 == inAxis % 2) {
                             value = -value;
                         }
 
-                        std::cout << "axis " << i << " value " << value << std::endl;
+                        std::cout << "axis " << inAxis << "->" << outAxis << " value " << value << std::endl;
 
                         if (value < -INPUT_VALUE_THRESHOLD) {
-                            movement[i] = ArmDevice::Motion::UP_RIGHT_CLOSE;
+                            movement[outAxis] = ArmDevice::Motion::UP_RIGHT_CLOSE;
                         } else if (value > INPUT_VALUE_THRESHOLD) {
-                            movement[i] = ArmDevice::Motion::DOWN_LEFT_OPEN;
+                            movement[outAxis] = ArmDevice::Motion::DOWN_LEFT_OPEN;
                         }
                     }
 

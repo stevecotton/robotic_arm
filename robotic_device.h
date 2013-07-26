@@ -11,6 +11,8 @@
  * (at your option) any later version.
  * 
  */
+#ifndef __ROBOTIC_DEVICE_H
+#define __ROBOTIC_DEVICE_H
 
 #include <map>
 #include <string>
@@ -56,3 +58,4 @@ public:
     ~ArmDevice();
 };
 
+#endif

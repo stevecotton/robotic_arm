@@ -5,7 +5,7 @@
 #include <iostream>
 #include <map>
 #include <string>
-#include <SDL.h>
+#include <SDL/SDL.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -80,7 +80,6 @@ public:
         }
 
         int number_to_send_to_kernel = kernelMotion[movements[0]];
-        std::cout << "Sending ioctl " << number_to_send_to_kernel << std::endl;
         if (0 != ioctl(deviceFd, number_to_send_to_kernel)) {
             std::cerr << "Error sending ioctl: " << errno << std::endl;
         }

@@ -17,13 +17,21 @@
 #include <map>
 #include <string>
 
+#include <libusb.h>
+
 class IOException {
 };
 
 /** Endpoint to talk to the kernel driver */
 class ArmDevice {
 private:
-    int deviceFd;
+    libusb_context* m_ctx;
+    libusb_device_handle* m_dev;
+
+    /**
+     * How many bytes the underlying USB data structure takes.
+     */
+    static const unsigned int COMMAND_LENGTH = 3;
 
 public:
     /**
@@ -56,6 +64,12 @@ public:
      * Destruction will automatically stop the device moving.
      */
     ~ArmDevice();
+
+private:
+    /**
+     * Low-level communication.
+     */
+    void sendCommand(uint8_t command[COMMAND_LENGTH]);
 };
 
 #endif

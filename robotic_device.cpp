@@ -8,6 +8,9 @@
  *
  * Copyright (C) 2013 Steve Cotton (steve@s.cotton.clara.co.uk)
  *
+ * Thanks to Vadim Zaliva <http://notbrainsurgery.livejournal.com/38622.html>
+ * for reverse-engineering the protocol.
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published
  * by the Free Software Foundation; version 2 of the License, or
@@ -27,14 +30,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-
 namespace {
-    /** Endpoint to talk to the kernel driver */
-    const char* DEVICE_FILENAME = "/dev/mrarm0";
-
-    static const int ARBITARY_IOCTL_NUM_STOP = 0xfedcba01;
-    static const int ARBITARY_IOCTL_NUM_CLOSE = 0xfedcba02;
-    static const int ARBITARY_IOCTL_NUM_OPEN = 0xfedcba03;
+    const uint16_t DEVICE_USB_ID_VENDOR = 0x1267;
+    const uint16_t DEVICE_USB_ID_PRODUCT = 0x0000;
+    const int INTERFACE_NUMBER = 0;
 
     std::map<ArmDevice::Motion, std::string> readableMotion {
         {ArmDevice::Motion::STOP, {"STOP"}},
@@ -42,17 +41,28 @@ namespace {
         {ArmDevice::Motion::WIDDERSHINS, {"WIDDERSHINS"}}
     };
 
-    std::map<ArmDevice::Motion, const int> kernelMotion {
-        {ArmDevice::Motion::STOP, ARBITARY_IOCTL_NUM_STOP},
-        {ArmDevice::Motion::RIMWARDS, ARBITARY_IOCTL_NUM_CLOSE},
-        {ArmDevice::Motion::WIDDERSHINS, ARBITARY_IOCTL_NUM_OPEN}
+    // In the command sent over USB, each axis is represented by 2 bits.
+    // Set one bit to move it one way, set the other bit to reverse.
+    std::map<ArmDevice::Motion, int> bitMotion {
+        {ArmDevice::Motion::STOP, 0x0},
+        {ArmDevice::Motion::RIMWARDS, 0x1},
+        {ArmDevice::Motion::WIDDERSHINS, 0x2}
     };
 }
 
 ArmDevice::ArmDevice() {
-    deviceFd = open(DEVICE_FILENAME, O_WRONLY);
-    if (0 > deviceFd) {
+    m_ctx = nullptr;
+    libusb_init(&m_ctx);
+
+    m_dev = libusb_open_device_with_vid_pid(m_ctx, DEVICE_USB_ID_VENDOR, DEVICE_USB_ID_PRODUCT);
+    if (!m_dev) {
         std::cout << "Failed to access the robotic arm" << std::endl;
+        throw new IOException();
+    }
+
+    int claimError = libusb_claim_interface(m_dev, INTERFACE_NUMBER);
+    if (0 != claimError) {
+        std::cout << "Found the robotic arm, but failed to interface (" << claimError << ")" << std::endl;
         throw new IOException();
     }
 }
@@ -63,14 +73,44 @@ void ArmDevice::motion(std::array<Motion, NUMBER_OF_AXIS> &movements) {
         std::cout << "Movement on axis " << axis << " in direction " << readableMotion[motion] << std::endl;
     }
 
-    int number_to_send_to_kernel = kernelMotion[movements[0]];
-    if (0 != ioctl(deviceFd, number_to_send_to_kernel)) {
-        std::cerr << "Error sending ioctl: " << errno << std::endl;
+    // Thanks to Vadim Zaliva <http://notbrainsurgery.livejournal.com/38622.html> for reverse-engineering the protocol
+    uint8_t first_byte = 0;
+    for (int axis=0; axis < 4; axis++) {
+        Motion& motion = movements[axis];
+        first_byte |= bitMotion[motion] << (2 * axis);
+    }
+
+    uint8_t second_byte = 0;
+    for (int axis=4; axis < NUMBER_OF_AXIS; axis++) {
+        Motion& motion = movements[axis];
+        second_byte |= bitMotion[motion] << (2 * (axis - 4));
+    }
+
+    uint8_t third_byte = 0;
+    // TODO: the LED
+
+    uint8_t command[COMMAND_LENGTH] {first_byte, second_byte, third_byte};
+
+    sendCommand(command);
+}
+
+void ArmDevice::sendCommand(uint8_t command[COMMAND_LENGTH]) {
+    int sendError = libusb_control_transfer(
+            m_dev, 0x40, 0x6, 0x100, 0x0,
+            command, COMMAND_LENGTH, 0);
+
+    if (COMMAND_LENGTH != sendError) {
+        std::cout << "I/O error talking to the robot (" << sendError << ")" << std::endl;
     }
 }
 
 ArmDevice::~ArmDevice() {
-    if (0 <= deviceFd) {
-        close(deviceFd);
+    if (m_dev) {
+        uint8_t command[] {0, 0, 0};
+        sendCommand(command);
+        // send stop-moving command
+        libusb_release_interface(m_dev, INTERFACE_NUMBER);
+        libusb_close(m_dev);
     }
+    libusb_exit(m_ctx);
 }

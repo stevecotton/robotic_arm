@@ -56,9 +56,13 @@ public:
     ArmDevice();
 
     /**
-     * Turn on or off the movement motors.
+     * Turn on or off the movement motors.  Calling this will changed all the
+     * motor's movements (any set to STOP will stop, even if they were moving
+     * before).
+     *
+     * @param light turn the LED on or off - again this overwrites the current situation
      */
-    void motion(std::array<Motion, NUMBER_OF_AXIS> &movements);
+    void motion(std::array<Motion, NUMBER_OF_AXIS> &movements, bool light);
 
     /**
      * Destruction will automatically stop the device moving.

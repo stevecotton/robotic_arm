@@ -21,6 +21,8 @@
 namespace {
     /** How far the joystick has to be pushed to be registered as being moved */
     const Sint16 INPUT_VALUE_THRESHOLD=16192;
+    /** Which button on the joystick controls the light (2nd right shoulder on my pad) */
+    const int INPUT_BUTTON_LED = 7;
 }
 
 int main(int argc, char** argv) {
@@ -63,7 +65,10 @@ int main(int argc, char** argv) {
                     keepRunning = false;
                     break;
                 }
+                case SDL_JOYBUTTONDOWN:
+                case SDL_JOYBUTTONUP:
                 case SDL_JOYAXISMOTION: {
+                    // For any change on the joystick, simply reread the whole state
                     std::cout << "Event " << (int)event.type << std::endl;
                     std::array<ArmDevice::Motion, ArmDevice::NUMBER_OF_AXIS> movement = {ArmDevice::Motion::STOP};
 
@@ -76,7 +81,9 @@ int main(int argc, char** argv) {
                         }
                     }
 
-                    device.motion(movement);
+                    bool led = SDL_JoystickGetButton(inputStick, INPUT_BUTTON_LED);
+
+                    device.motion(movement, led);
                 }
             }
         }

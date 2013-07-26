@@ -67,11 +67,12 @@ ArmDevice::ArmDevice() {
     }
 }
 
-void ArmDevice::motion(std::array<Motion, NUMBER_OF_AXIS> &movements) {
+void ArmDevice::motion(std::array<Motion, NUMBER_OF_AXIS> &movements, bool light) {
     for (int axis=0; axis < NUMBER_OF_AXIS; axis++) {
         Motion& motion = movements[axis];
         std::cout << "Movement on axis " << axis << " in direction " << readableMotion[motion] << std::endl;
     }
+    std::cout << "Light " << light << std::endl;
 
     // Thanks to Vadim Zaliva <http://notbrainsurgery.livejournal.com/38622.html> for reverse-engineering the protocol
     uint8_t first_byte = 0;
@@ -87,7 +88,9 @@ void ArmDevice::motion(std::array<Motion, NUMBER_OF_AXIS> &movements) {
     }
 
     uint8_t third_byte = 0;
-    // TODO: the LED
+    if (light) {
+        third_byte = 1;
+    }
 
     uint8_t command[COMMAND_LENGTH] {first_byte, second_byte, third_byte};
 

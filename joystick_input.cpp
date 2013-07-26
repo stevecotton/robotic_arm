@@ -73,11 +73,19 @@ int main(int argc, char** argv) {
                     std::array<ArmDevice::Motion, ArmDevice::NUMBER_OF_AXIS> movement = {ArmDevice::Motion::STOP};
 
                     for (int i=0; i < numAxis ; i++) {
-                        Sint16 value = SDL_JoystickGetAxis(inputStick, i);
+                        // SDL joystick coordinates are positive down-right.  The arm seems to associate down-left with negative, so reverse one axis.
+                        // The SDL value is a signed 16-bit, promoted in this code to handle 16-bit MIN_VALUE.
+                        int32_t value = SDL_JoystickGetAxis(inputStick, i);
+                        if (0 == i % 2) {
+                            value = -value;
+                        }
+
+                        std::cout << "axis " << i << " value " << value << std::endl;
+
                         if (value < -INPUT_VALUE_THRESHOLD) {
-                            movement[i] = ArmDevice::Motion::RIMWARDS;
+                            movement[i] = ArmDevice::Motion::UP_RIGHT_CLOSE;
                         } else if (value > INPUT_VALUE_THRESHOLD) {
-                            movement[i] = ArmDevice::Motion::WIDDERSHINS;
+                            movement[i] = ArmDevice::Motion::DOWN_LEFT_OPEN;
                         }
                     }
 

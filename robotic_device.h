@@ -36,12 +36,13 @@ private:
 public:
     /**
      * What movement to make on a particular axis.
-     * Which direction is which is still to be decided, hence the odd names.
      */
     enum class Motion {
         STOP,
-        RIMWARDS,
-        WIDDERSHINS
+        /** Depending on axis, lift, turn the base right, or close the claw */
+        UP_RIGHT_CLOSE,
+        /** Depending on axis, lower, turn the base left, or open the claw */
+        DOWN_LEFT_OPEN
     };
 
     /**

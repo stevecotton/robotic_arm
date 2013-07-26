@@ -37,16 +37,16 @@ namespace {
 
     std::map<ArmDevice::Motion, std::string> readableMotion {
         {ArmDevice::Motion::STOP, {"STOP"}},
-        {ArmDevice::Motion::RIMWARDS, {"RIMWARDS"}},
-        {ArmDevice::Motion::WIDDERSHINS, {"WIDDERSHINS"}}
+        {ArmDevice::Motion::UP_RIGHT_CLOSE, {"UP_RIGHT_CLOSE"}},
+        {ArmDevice::Motion::DOWN_LEFT_OPEN, {"DOWN_LEFT_OPEN"}}
     };
 
     // In the command sent over USB, each axis is represented by 2 bits.
     // Set one bit to move it one way, set the other bit to reverse.
     std::map<ArmDevice::Motion, int> bitMotion {
         {ArmDevice::Motion::STOP, 0x0},
-        {ArmDevice::Motion::RIMWARDS, 0x1},
-        {ArmDevice::Motion::WIDDERSHINS, 0x2}
+        {ArmDevice::Motion::UP_RIGHT_CLOSE, 0x1},
+        {ArmDevice::Motion::DOWN_LEFT_OPEN, 0x2}
     };
 }
 

@@ -25,12 +25,6 @@
 #include <string>
 #include <system_error>
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/ioctl.h>
-#include <fcntl.h>
-#include <unistd.h>
-
 namespace {
     const uint16_t DEVICE_USB_ID_VENDOR = 0x1267;
     const uint16_t DEVICE_USB_ID_PRODUCT = 0x0000;

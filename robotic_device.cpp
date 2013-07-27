@@ -23,6 +23,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <system_error>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -57,13 +58,13 @@ ArmDevice::ArmDevice() {
     m_dev = libusb_open_device_with_vid_pid(m_ctx, DEVICE_USB_ID_VENDOR, DEVICE_USB_ID_PRODUCT);
     if (!m_dev) {
         std::cout << "Failed to access the robotic arm" << std::endl;
-        throw new IOException();
+        throw std::system_error();
     }
 
     int claimError = libusb_claim_interface(m_dev, INTERFACE_NUMBER);
     if (0 != claimError) {
         std::cout << "Found the robotic arm, but failed to interface (" << claimError << ")" << std::endl;
-        throw new IOException();
+        throw std::system_error();
     }
 }
 

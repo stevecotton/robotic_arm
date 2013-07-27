@@ -19,9 +19,6 @@
 
 #include <libusb.h>
 
-class IOException {
-};
-
 /** Endpoint to talk to the kernel driver */
 class ArmDevice {
 private:

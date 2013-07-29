@@ -63,6 +63,12 @@ public:
     void motion(std::array<Motion, NUMBER_OF_AXIS> &movements, bool light);
 
     /**
+     * Stop all the motors moving.  Equivalent to calling motion() with all
+     * of the movements set to STOP, and light==false.
+     */
+    void stop();
+
+    /**
      * Destruction will automatically stop the device moving.
      */
     ~ArmDevice();

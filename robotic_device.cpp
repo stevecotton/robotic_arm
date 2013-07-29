@@ -102,11 +102,14 @@ void ArmDevice::sendCommand(uint8_t command[COMMAND_LENGTH]) {
     }
 }
 
+void ArmDevice::stop() {
+    uint8_t command[] {0, 0, 0};
+    sendCommand(command);
+}
+
 ArmDevice::~ArmDevice() {
     if (m_dev) {
-        uint8_t command[] {0, 0, 0};
-        sendCommand(command);
-        // send stop-moving command
+        stop();
         libusb_release_interface(m_dev, INTERFACE_NUMBER);
         libusb_close(m_dev);
     }

@@ -23,8 +23,6 @@
 namespace {
     /** How far the joystick has to be pushed to be registered as being moved */
     const Sint16 INPUT_VALUE_THRESHOLD=16192;
-    /** Which button on the joystick controls the light (2nd right shoulder on my pad) */
-    const int INPUT_BUTTON_LED = 7;
 }
 
 int main(int argc, char** argv) {
@@ -47,9 +45,8 @@ int main(int argc, char** argv) {
         SDL_Joystick* inputStick = SDL_JoystickOpen(joystickIndex);
 
         const int numAxis = SDL_JoystickNumAxes(inputStick);
-        if (numAxis < ArmDevice::NUMBER_OF_AXIS) {
-            std::cout << "This joystick has less axis than the robot." << std::endl;
-        }
+        const int numButtons = SDL_JoystickNumButtons(inputStick);
+        InputMapping::sanityCheckConfig(numAxis, numButtons);
 
         bool keepRunning = true;
         while (keepRunning) {
@@ -74,13 +71,22 @@ int main(int argc, char** argv) {
                     std::cout << "Event " << (int)event.type << std::endl;
                     std::array<ArmDevice::Motion, ArmDevice::NUMBER_OF_AXIS> movement = {ArmDevice::Motion::STOP};
 
-                    for (int outAxis=0; outAxis < numAxis ; outAxis++) {
-                        const int inAxis = InputMapping::getInputForOutput(outAxis);
+                    auto& axisMapping = InputMapping::getAxisMappings();
+                    for (auto mapping = axisMapping.begin(); mapping != axisMapping.end(); mapping++) {
+                        const int inAxis = mapping->inAxis;
+                        const int outAxis = mapping->outAxis;
+
+                        if (0 > inAxis) {
+                            std::cout << "The joystick configuration is wrong (negative numbers for axis)." << std::endl;
+                        } else if (inAxis >= numAxis) {
+                            std::cout << "Your joystick ." << std::endl;
+                        }
+
 
                         // SDL joystick coordinates are positive down-right.  The arm seems to associate down-left with negative, so reverse one axis.
                         // The SDL value is a signed 16-bit, promoted in this code to handle 16-bit MIN_VALUE.
                         int32_t value = SDL_JoystickGetAxis(inputStick, inAxis);
-                        if (0 == inAxis % 2) {
+                        if (mapping->reversed) {
                             value = -value;
                         }
 
@@ -93,7 +99,21 @@ int main(int argc, char** argv) {
                         }
                     }
 
-                    bool led = SDL_JoystickGetButton(inputStick, INPUT_BUTTON_LED);
+                    auto& buttonMapping = InputMapping::getButtonMappings();
+                    for (auto mapping = buttonMapping.begin(); mapping != buttonMapping.end(); mapping++) {
+                        const bool pressed = SDL_JoystickGetButton(inputStick, mapping->inButton);
+                        if (pressed) {
+                            movement[mapping->outAxis] = mapping->direction;
+                        }
+                    }
+
+                    auto& lightButtons = InputMapping::getLightButtons();
+                    bool led = false;
+                    for (auto mapping = lightButtons.begin(); mapping != lightButtons.end(); mapping++) {
+                        if (SDL_JoystickGetButton(inputStick, *mapping)) {
+                            led = true;
+                        }
+                    }
 
                     device.motion(movement, led);
                 }

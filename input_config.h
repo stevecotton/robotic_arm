@@ -1,8 +1,6 @@
 /*
  * Control the Maplin A37JN Robotic Arm via a joystick.
  *
- * The device has five bidirectional DC motors, and an LED.
- *
  * Copyright (C) 2013 Steve Cotton (steve@s.cotton.clara.co.uk)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -13,28 +11,64 @@
  */
 
 #include <map>
+#include <vector>
 
 #include "robotic_device.h"
 
 /**
- * Placeholder for user-definable mapping of the input axis to the robot's axis.
+ * Placeholder for the user to configure which joystick sticks or buttons
+ * move the arm.
+ *
  * For now it is a hardcoded list.
  */
 namespace InputMapping {
-    namespace {
-        static std::map<const int, const int> outputToInput {
-            {0, 5},
-            {1, 3},
-            {2, 2},
-            {3, 1},
-            {4, 0}
-        };
-    }
+
+    /** Configuration for a joystick stick or pad */
+    class AxisMapping {
+    public:
+        const int inAxis;
+        const int outAxis;
+        /** True if positive input values map to DOWN_LEFT_OPEN */
+        const bool reversed;
+
+        AxisMapping(int in, int out, bool rev) :
+                inAxis(in),
+                outAxis(out),
+                reversed(rev) {
+        }
+    };
+
+    /** Configuration for pressed/not pressed buttons */
+    class ButtonMapping {
+    public:
+        const int inButton;
+        const int outAxis;
+        const ArmDevice::Motion direction;
+
+        ButtonMapping(int in, int out, ArmDevice::Motion dir) :
+                inButton(in),
+                outAxis(out),
+                direction(dir) {
+        }
+    };
+
+    const std::vector<AxisMapping> getAxisMappings();
+    const std::vector<ButtonMapping> getButtonMappings();
 
     /**
-     * Given an output axis, state which joystick axis should be read.
+     * These buttons turn on the light.
      */
-    int getInputForOutput(int output) {
-        return outputToInput[output];
-    }
+    const std::vector<int> getLightButtons();
+
+    /**
+     * Check that the mapping in InputMapping is sensible - that the
+     * joystick has enough axis/buttons, and more importantly that the
+     * hardware to be driven has the expected number of motors.
+     *
+     * Needing a more advanced joystick merely gets a text warning,
+     * trying to drive non-existant motors throws a std::runtime_error.
+     *
+     * @param numAxis the spec of the joystick that we're using
+     */
+    void sanityCheckConfig(int numAxis, int numButtons);
 };

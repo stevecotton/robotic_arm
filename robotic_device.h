@@ -1,4 +1,4 @@
-/**
+/*
  * Driver for the Maplin A37JN Robotic Arm
  *
  * The device has five bidirectional DC motors, and an LED.
@@ -54,7 +54,7 @@ public:
     ArmDevice();
 
     /**
-     * Turn on or off the movement motors.  Calling this will changed all the
+     * Turn on or off the movement motors.  Calling this will change all the
      * motor's movements (any set to STOP will stop, even if they were moving
      * before).
      *

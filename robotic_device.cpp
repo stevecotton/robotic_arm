@@ -1,4 +1,4 @@
-/**
+/*
  * Driver for the Maplin A37JN Robotic Arm
  *
  * The device has five bidirectional DC motors, and an LED.

@@ -1,4 +1,4 @@
-/**
+/*
  * Control the Maplin A37JN Robotic Arm via a joystick.
  *
  * The device has five bidirectional DC motors, and an LED.

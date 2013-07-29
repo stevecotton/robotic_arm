@@ -14,7 +14,8 @@
 
 #include <iostream>
 #include <map>
-#include <SDL/SDL.h>
+
+#include <SDL.h>
 
 #include "robotic_device.h"
 #include "input_config.h"

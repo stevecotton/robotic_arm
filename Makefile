@@ -1,5 +1,8 @@
-CXXFLAGS += -std=c++11 -g -O0 `pkg-config --cflags libusb-1.0`
-LDLIBS += -l SDL `pkg-config --libs libusb-1.0`
+CXXFLAGS += -std=c++11 -g -O0
+CXXFLAGS += `pkg-config --cflags sdl`
+CXXFLAGS += `pkg-config --cflags libusb-1.0`
+LDLIBS += `pkg-config --libs sdl`
+LDLIBS += `pkg-config --libs libusb-1.0`
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(LDLIBS) -c -o $@ $^

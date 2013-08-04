@@ -14,7 +14,7 @@
 #ifndef __ROBOTIC_DEVICE_H
 #define __ROBOTIC_DEVICE_H
 
-#include <map>
+#include <array>
 #include <string>
 
 #include <libusb.h>

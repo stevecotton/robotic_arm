@@ -10,7 +10,6 @@
  * 
  */
 
-#include <map>
 #include <vector>
 
 #include "robotic_device.h"

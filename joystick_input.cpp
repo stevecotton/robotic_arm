@@ -13,7 +13,6 @@
  */
 
 #include <iostream>
-#include <map>
 
 #include <SDL.h>
 

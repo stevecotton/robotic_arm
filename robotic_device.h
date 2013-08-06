@@ -53,6 +53,9 @@ public:
      */
     ArmDevice();
 
+    ArmDevice& operator=(const ArmDevice&) = delete;
+    ArmDevice(const ArmDevice&) = delete;
+
     /**
      * Turn on or off the movement motors.  Calling this will change all the
      * motor's movements (any set to STOP will stop, even if they were moving

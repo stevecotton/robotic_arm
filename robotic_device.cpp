@@ -70,35 +70,39 @@ void ArmDevice::motion(std::array<Motion, NUMBER_OF_AXIS> &movements, bool light
     std::cout << "Light " << light << std::endl;
 
     // Thanks to Vadim Zaliva <http://notbrainsurgery.livejournal.com/38622.html> for reverse-engineering the protocol
-    uint8_t first_byte = 0;
+    uint8_t command[] {0, 0, 0};
+
+    static_assert(3 == sizeof(command), "Mismatch between command data and the data encoder");
+    static_assert(5 <= NUMBER_OF_AXIS, "Expected to need 2 bytes to encode axis movements");
+    static_assert(8 >= NUMBER_OF_AXIS, "Expected to need 2 bytes to encode axis movements");
+
+    uint8_t& first_byte = command[0];
     for (int axis=0; axis < 4; axis++) {
         Motion& motion = movements[axis];
         first_byte |= bitMotion[motion] << (2 * axis);
     }
 
-    uint8_t second_byte = 0;
+    uint8_t& second_byte = command[1];
     for (int axis=4; axis < NUMBER_OF_AXIS; axis++) {
         Motion& motion = movements[axis];
         second_byte |= bitMotion[motion] << (2 * (axis - 4));
     }
 
-    uint8_t third_byte = 0;
+    uint8_t& third_byte = command[2];
     if (light) {
         third_byte = 1;
     }
-
-    uint8_t command[COMMAND_LENGTH] {first_byte, second_byte, third_byte};
 
     sendCommand(command);
 }
 
 void ArmDevice::sendCommand(uint8_t command[COMMAND_LENGTH]) {
-    int sendError = libusb_control_transfer(
+    int bytesSent = libusb_control_transfer(
             m_dev, 0x40, 0x6, 0x100, 0x0,
             command, COMMAND_LENGTH, 0);
 
-    if (COMMAND_LENGTH != sendError) {
-        std::cout << "I/O error talking to the robot (" << sendError << ")" << std::endl;
+    if (COMMAND_LENGTH != bytesSent) {
+        std::cout << "I/O error talking to the robot (" << bytesSent << ")" << std::endl;
     }
 }
 

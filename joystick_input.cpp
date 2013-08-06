@@ -68,7 +68,8 @@ int main(int argc, char** argv) {
                 case SDL_JOYAXISMOTION: {
                     // For any change on the joystick, simply reread the whole state
                     std::cout << "Event " << (int)event.type << std::endl;
-                    std::array<ArmDevice::Motion, ArmDevice::NUMBER_OF_AXIS> movement = {ArmDevice::Motion::STOP};
+                    std::array<ArmDevice::Motion, ArmDevice::NUMBER_OF_AXIS> movement;
+                    movement.fill(ArmDevice::Motion::STOP);
 
                     auto& axisMapping = InputMapping::getAxisMappings();
                     for (auto mapping = axisMapping.begin(); mapping != axisMapping.end(); mapping++) {

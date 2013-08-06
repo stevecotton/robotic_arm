@@ -45,7 +45,7 @@ public:
     /**
      * How many motors there are in the device (each one gets a Motion).
      */
-    static const unsigned int NUMBER_OF_AXIS = 5;
+    static const int NUMBER_OF_AXIS = 5;
 
 public:
     /**

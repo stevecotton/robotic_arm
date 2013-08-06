@@ -1,4 +1,4 @@
-CXXFLAGS += -std=c++11 -g -O0
+CXXFLAGS += -std=c++11 -g -O3 -Wall
 CXXFLAGS += `pkg-config --cflags sdl`
 CXXFLAGS += `pkg-config --cflags libusb-1.0`
 LDLIBS += `pkg-config --libs sdl`
